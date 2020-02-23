@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 import 'package:shift_jis/shift_jis.dart';
@@ -15,11 +16,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF0175c2);
+    const Color secondaryColor = Color(0xFF13B9FD);
+    final ColorScheme colorScheme = const ColorScheme.dark().copyWith(
+      primary: primaryColor,
+      secondary: secondaryColor,
+    );
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        accentColorBrightness: Brightness.dark,
+        primaryColor: primaryColor,
+        primaryColorDark: const Color(0xFF0050a0),
+        primaryColorLight: secondaryColor,
+        buttonColor: primaryColor,
+        indicatorColor: Colors.white,
+        toggleableActiveColor: const Color(0xFF6997DF),
+        accentColor: secondaryColor,
+        canvasColor: const Color(0xFF202124),
+        scaffoldBackgroundColor: const Color(0xFF202124),
+        backgroundColor: const Color(0xFF202124),
+        errorColor: const Color(0xFFB00020),
+        buttonTheme: ButtonThemeData(
+          colorScheme: colorScheme,
+          textTheme: ButtonTextTheme.primary,
+        ),
       ),
       routes: routes,
     );
@@ -68,6 +91,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     getThreadslist();
   }
 
@@ -93,9 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   build(context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Thread List"),
-      ),
       body: ListView.builder(
         itemCount: threads.length,
         itemBuilder: (context, index) {
@@ -129,8 +152,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: getThreadslist,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        tooltip: 'Refresh',
+        child: Icon(Icons.refresh),
+        backgroundColor: Colors.purpleAccent,
       ),
     );
   }
