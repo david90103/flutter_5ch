@@ -44,7 +44,6 @@ class ThreadPage extends StatefulWidget {
 
 class _ThreadPageState extends State<ThreadPage> {
   String t = '';
-  String baseUrl = 'https://mevius.5ch.net/test/read.cgi/nogizaka';
   var comments = new List<Comments>();
   var client = http.Client();
   static const int MAX_LENGTH = 60;
@@ -58,7 +57,7 @@ class _ThreadPageState extends State<ThreadPage> {
   Future getCommentslist() async {
     String link = ModalRoute.of(context).settings.arguments;
     try {
-      var uriResponse = await client.get(baseUrl + '/' + link);
+      var uriResponse = await client.get(link);
       final decoded = await ShiftJis.decode(uriResponse.bodyBytes);
       var document = parse(decoded);
       setState(() {
