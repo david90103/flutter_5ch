@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:translator/translator.dart';
+import 'package:photo_view/photo_view.dart';
 import 'dart:convert';
 import 'thread.dart';
 import 'board.dart';
@@ -118,30 +118,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               children: categories[index].boards.map(_buildTiles).toList(),
-              // onTap: () {
-              //   setState(() {
-              //     categories[index].expand = !categories[index].expand;
-              //   });
-              //   // Navigator.pushNamed(context, '/board',
-              //   //     arguments: categories[index].title);
-              // },
-              // onLongPress: () async {
-              //   final translator = GoogleTranslator();
-              //   var translation = await translator.translate(
-              //       categories[index].title,
-              //       from: 'ja',
-              //       to: 'zh-tw');
-              //   setState(() {
-              //     categories[index].title = translation;
-              //   });
-              // },
               trailing: Icon(Icons.keyboard_arrow_down),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: getThreadslist,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return PhotoView(
+                imageProvider: const NetworkImage(
+                    'https://nogihub.gq/img/intro-carousel/2.jpg'),
+              );
+            },
+          );
+        },
         tooltip: 'Refresh',
         child: Icon(Icons.refresh),
         backgroundColor: Colors.blueAccent,
