@@ -13,7 +13,7 @@ class Threads {
 
   Threads(String title, String link, int c) {
     this.title = title;
-    this.link = link;
+    this.link = link.replaceAll('/l50', '');
     this.comments = c;
     if (c > 900)
       this.color = Colors.red;
@@ -34,7 +34,7 @@ class Threads {
     Match match = exp.firstMatch(str);
 
     this.title = match.group(1);
-    this.link = link;
+    this.link = link.replaceAll('/l50', '');
     int c = int.parse(match.group(2));
     this.comments = c;
     if (c > 900)
@@ -141,7 +141,7 @@ class _BoardPageState extends State<BoardPage> {
         onPressed: getThreadslist,
         tooltip: 'Refresh',
         child: Icon(Icons.refresh),
-        backgroundColor: Colors.purpleAccent,
+        backgroundColor: Colors.blueAccent,
       ),
     );
   }

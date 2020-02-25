@@ -123,22 +123,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return PhotoView(
-                imageProvider: const NetworkImage(
-                    'https://nogihub.gq/img/intro-carousel/2.jpg'),
-              );
-            },
-          );
-        },
-        tooltip: 'Refresh',
-        child: Icon(Icons.refresh),
-        backgroundColor: Colors.blueAccent,
-      ),
     );
   }
 

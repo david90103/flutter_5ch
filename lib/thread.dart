@@ -51,7 +51,10 @@ class _ThreadPageState extends State<ThreadPage> {
   String t = '';
   var comments = new List<Comments>();
   var client = http.Client();
-  static const int MAX_LENGTH = 60;
+  static const int TEXT_MAX_LENGTH = 60;
+  static const int DISPLAY_COMMENTS = 50;
+  int offset = 0;
+  ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
@@ -85,52 +88,59 @@ class _ThreadPageState extends State<ThreadPage> {
     return Scaffold(
       body: comments.length > 0
           ? ListView.builder(
-              itemCount: comments.length,
+              controller: _scrollController,
+              itemCount: offset + DISPLAY_COMMENTS > comments.length
+                  ? comments.length - offset
+                  : DISPLAY_COMMENTS,
               itemBuilder: (context, index) {
                 return Column(children: <Widget>[
                   Card(
                     child: ListTile(
                       leading: SvgPicture.string(
-                        Jdenticon.toSvg(comments[index].id),
+                        Jdenticon.toSvg(comments[offset + index].id),
                         fit: BoxFit.contain,
                         height: 32,
                         width: 32,
                       ),
-                      title: Text(comments[index].fold &&
-                              comments[index].text.length > MAX_LENGTH
-                          ? comments[index].text.substring(0, MAX_LENGTH) +
+                      title: Text(comments[offset + index].fold &&
+                              comments[offset + index].text.length >
+                                  TEXT_MAX_LENGTH
+                          ? comments[offset + index]
+                                  .text
+                                  .substring(0, TEXT_MAX_LENGTH) +
                               ' ......'
-                          : comments[index].text),
-                      subtitle: Text(comments[index].floor.toString() +
+                          : comments[offset + index].text),
+                      subtitle: Text(comments[offset + index].floor.toString() +
                           ' ' +
-                          comments[index].id +
+                          comments[offset + index].id +
                           ' ' +
-                          comments[index].date),
+                          comments[offset + index].date),
                       onTap: () {
                         setState(() {
-                          comments[index].fold = !comments[index].fold;
+                          comments[offset + index].fold =
+                              !comments[offset + index].fold;
                         });
                       },
                       onLongPress: () async {
                         final translator = GoogleTranslator();
                         var translation = await translator.translate(
-                            comments[index].text,
+                            comments[offset + index].text,
                             from: 'ja',
                             to: 'zh-tw');
                         setState(() {
-                          comments[index].text = translation;
+                          comments[offset + index].text = translation;
                         });
                       },
                     ),
                   ),
-                  comments[index].images.length > 0
+                  comments[offset + index].images.length > 0
                       ? Container(
                           margin: EdgeInsets.symmetric(horizontal: 5),
                           height: 30,
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             children: List.generate(
-                                comments[index].images.length, (i) {
+                                comments[offset + index].images.length, (i) {
                               return Padding(
                                 padding: EdgeInsets.only(right: 3),
                                 child: FlatButton(
@@ -139,13 +149,15 @@ class _ThreadPageState extends State<ThreadPage> {
                                   child: Text('Image ${i + 1}'),
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(
-                                        text: comments[index].images[i]));
+                                        text: comments[offset + index]
+                                            .images[i]));
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
                                         return PhotoView(
                                           imageProvider: NetworkImage(
-                                              comments[index].images[i]),
+                                              comments[offset + index]
+                                                  .images[i]),
                                         );
                                       },
                                     );
@@ -163,6 +175,93 @@ class _ThreadPageState extends State<ThreadPage> {
               alignment: Alignment.center,
               child: Text('Loading...'),
             ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            heroTag: "btn_first",
+            mini: true,
+            onPressed: () {
+              setState(() {
+                offset = 0;
+                _scrollController.animateTo(
+                  0,
+                  curve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 1000),
+                );
+              });
+            },
+            tooltip: 'Refresh',
+            child: Icon(Icons.first_page),
+            backgroundColor: Colors.blueAccent,
+          ),
+          FloatingActionButton(
+            heroTag: "btn_prev",
+            mini: true,
+            onPressed: () {
+              setState(() {
+                if (offset - DISPLAY_COMMENTS < 0) {
+                  offset = 0;
+                } else {
+                  offset = offset - DISPLAY_COMMENTS;
+                  _scrollController.animateTo(
+                    _scrollController.position.maxScrollExtent,
+                    curve: Curves.easeOut,
+                    duration: const Duration(milliseconds: 1000),
+                  );
+                }
+              });
+            },
+            tooltip: 'Refresh',
+            child: Icon(Icons.chevron_left),
+            backgroundColor: Colors.blueAccent,
+          ),
+          FloatingActionButton(
+            heroTag: "btn_next",
+            mini: true,
+            onPressed: () {
+              setState(() {
+                if (offset + DISPLAY_COMMENTS > comments.length - 1) {
+                  if (comments.length - DISPLAY_COMMENTS < 0) {
+                    offset = 0;
+                  } else {
+                    offset = comments.length - DISPLAY_COMMENTS;
+                  }
+                } else {
+                  offset = offset + DISPLAY_COMMENTS;
+                  _scrollController.animateTo(
+                    0,
+                    curve: Curves.easeOut,
+                    duration: const Duration(milliseconds: 1000),
+                  );
+                }
+              });
+            },
+            tooltip: 'Refresh',
+            child: Icon(Icons.chevron_right),
+            backgroundColor: Colors.blueAccent,
+          ),
+          FloatingActionButton(
+            heroTag: "btn_end",
+            mini: true,
+            onPressed: () {
+              setState(() {
+                offset = comments.length - DISPLAY_COMMENTS < 0
+                    ? 0
+                    : comments.length - DISPLAY_COMMENTS;
+                _scrollController.animateTo(
+                  _scrollController.position.maxScrollExtent,
+                  curve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 1000),
+                );
+              });
+            },
+            tooltip: 'Refresh',
+            child: Icon(Icons.last_page),
+            backgroundColor: Colors.blueAccent,
+          ),
+        ],
+      ),
     );
   }
 }
