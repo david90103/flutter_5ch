@@ -9,6 +9,8 @@ import 'package:translator/translator.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Comments {
   int floor;
@@ -30,11 +32,11 @@ class Comments {
 
   _extractImage(t) {
     this.images = [];
-    RegExp exp = new RegExp(
-        r"h?t?t?p?s?:?\/?\/?i\.imgur\.com\/([a-zA-Z0-9]*)\.(jpg|png|gif)");
+    RegExp exp =
+        new RegExp(r"h?t?t?p?s?:?\/?\/?([/|.|\w|-]*\.(?:jpg|gif|png))");
     Iterable matches = exp.allMatches(t);
     for (Match m in matches) {
-      this.images.add("https://i.imgur.com/${m.group(1)}.${m.group(2)}");
+      this.images.add("http://${m.group(1)}");
     }
   }
 }
@@ -48,8 +50,8 @@ class ThreadPage extends StatefulWidget {
 }
 
 class _ThreadPageState extends State<ThreadPage> {
-  String t = '';
   var comments = new List<Comments>();
+  String link = '';
   var client = http.Client();
   static const int TEXT_MAX_LENGTH = 60;
   static const int DISPLAY_COMMENTS = 50;
@@ -59,15 +61,23 @@ class _ThreadPageState extends State<ThreadPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, getCommentslist);
+    Future.delayed(Duration.zero, _getCommentslist);
   }
 
-  Future getCommentslist() async {
-    String link = ModalRoute.of(context).settings.arguments;
+  @override
+  void dispose() {
+    _saveReadComments(link, offset);
+    super.dispose();
+  }
+
+  Future _getCommentslist() async {
+    link = ModalRoute.of(context).settings.arguments;
     try {
       var uriResponse = await client.get(link);
       final decoded = await ShiftJis.decode(uriResponse.bodyBytes);
       var document = parse(decoded);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      offset = prefs.getInt(link) ?? 0;
       setState(() {
         comments.clear();
         for (var thread in document.getElementsByClassName('post')) {
@@ -81,6 +91,11 @@ class _ThreadPageState extends State<ThreadPage> {
     } catch (e, stacktrace) {
       print(e + stacktrace);
     }
+  }
+
+  Future _saveReadComments(String link, int i) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt(link, i);
   }
 
   @override
@@ -173,7 +188,10 @@ class _ThreadPageState extends State<ThreadPage> {
             )
           : Container(
               alignment: Alignment.center,
-              child: Text('Loading...'),
+              child: SpinKitThreeBounce(
+                color: Colors.blueGrey,
+                size: 30.0,
+              ),
             ),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -191,9 +209,9 @@ class _ThreadPageState extends State<ThreadPage> {
                 );
               });
             },
-            tooltip: 'Refresh',
+            tooltip: 'First',
             child: Icon(Icons.first_page),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blueGrey[700],
           ),
           FloatingActionButton(
             heroTag: "btn_prev",
@@ -212,9 +230,9 @@ class _ThreadPageState extends State<ThreadPage> {
                 }
               });
             },
-            tooltip: 'Refresh',
+            tooltip: 'Prev',
             child: Icon(Icons.chevron_left),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blueGrey[700],
           ),
           FloatingActionButton(
             heroTag: "btn_next",
@@ -237,9 +255,9 @@ class _ThreadPageState extends State<ThreadPage> {
                 }
               });
             },
-            tooltip: 'Refresh',
+            tooltip: 'Next',
             child: Icon(Icons.chevron_right),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blueGrey[700],
           ),
           FloatingActionButton(
             heroTag: "btn_end",
@@ -256,9 +274,9 @@ class _ThreadPageState extends State<ThreadPage> {
                 );
               });
             },
-            tooltip: 'Refresh',
+            tooltip: 'Last',
             child: Icon(Icons.last_page),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blueGrey[700],
           ),
         ],
       ),

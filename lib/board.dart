@@ -95,7 +95,7 @@ class _BoardPageState extends State<BoardPage> {
         for (var thread in document.getElementById('trad').children) {
           threads.add(new Threads.fromHtml(
               thread.innerHtml, thread.attributes['href']));
-          if (threads.length > 100) break;
+          if (threads.length > 200) break; // TODO: Pagination
         }
       });
     } catch (e) {
@@ -141,7 +141,7 @@ class _BoardPageState extends State<BoardPage> {
         onPressed: getThreadslist,
         tooltip: 'Refresh',
         child: Icon(Icons.refresh),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blueGrey[700],
       ),
     );
   }
